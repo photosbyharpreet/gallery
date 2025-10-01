@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Photos by Harpreet</title>
+  <meta name="description" content="A curated gallery of weddings and portraits by Harpreet Singh." />
+  <meta property="og:title" content="Photos by Harpreet" />
+  <meta property="og:description" content="Weddings • Portraits • People" />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#111111" />
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --text: #111;
+      --muted: #6b7280;
+      --card: #fff;
+      --ring: rgba(59,130,246,0.5);
+      --gap: 16px;
+      --radius: 14px;
+      --shadow: 0 6px 20px rgba(0,0,0,0.18);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b0b0b;
+        --text: #f4f4f5;
+        --muted: #9ca3af;
+        --card: #161616;
+        --shadow: 0 10px 30px rgba(0,0,0,0.5);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.75));
+      color: white;
+      backdrop-filter: blur(6px);
+      padding: 18px 16px;
+      box-shadow: inset 0 -1px rgba(255,255,255,0.06);
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    .brand {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    }
+    .brand h1 { font-size: clamp(1.25rem, 1.1rem + 1.2vw, 1.8rem); margin: 0; letter-spacing: 0.4px; }
+    .brand span { color: #c7c7c7; font-size: 0.95rem; }
+
+    /* Filter bar */
+    .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    .filters button {
+      appearance: none; border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      padding: 8px 12px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 0.9rem;
+      transition: transform .12s ease, background .2s ease, border-color .2s ease;
+    }
+    .filters button:hover { transform: translateY(-1px); }
+    .filters button[aria-pressed="true"] { background: #fff; color: #111; border-color: transparent; }
+
+    main { padding: 22px 16px 40px; }
+
+    /* Responsive grid */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--gap);
+    }
+    @media (max-width: 1024px) { .gallery { grid-template-columns: repeat(8, 1fr);} }
+    @media (max-width: 640px)  { .gallery { grid-template-columns: repeat(4, 1fr);} }
+
+    .item { grid-column: span 4; }
+    .item.tall { grid-row: span 2; }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      overflow: clip;
+      box-shadow: var(--shadow);
+      position: relative;
+      isolation: isolate;
+    }
+    .card img { width: 100%; height: 100%; display: block; object-fit: cover; aspect-ratio: 4 / 5; }
+    .card:focus-within { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+    .badge {
+      position: absolute; left: 10px; top: 10px; z-index: 2;
+      background: rgba(0,0,0,0.6); color: #fff; padding: 4px 8px; border-radius: 999px; font-size: 12px;
+      letter-spacing: .3px; user-select: none;
+    }
+
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+    /* Lightbox */
+    .lightbox { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 1000; }
+    .lightbox.active { display: flex; }
+    .backdrop { position: absolute; inset:0; background: rgba(0,0,0,0.88); }
+    .stage { position: relative; max-width: 95vw; max-height: 90vh; display: grid; place-items: center; }
+    .stage img { max-width: 95vw; max-height: 90vh; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+
+    .controls { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; }
+    .ctrl {
+      display: grid; place-items: center; width: 44px; height: 44px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08); color: white; cursor: pointer; font-size: 22px; user-select: none;
+    }
+    .ctrl:hover { background: rgba(255,255,255,0.15); }
+
+    .close {
+      position: absolute; right: 10px; top: 10px; z-index: 2;
+      width: 40px; height: 40px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08); color: #fff; font-size: 22px; cursor: pointer;
+    }
+
+    /* Small screens */
+    @media (max-width: 480px), (max-device-width: 480px) {
+      header { padding: 20px 14px; }
+      .brand h1 { font-size: 1.25rem; }
+      main { padding: 16px 10px 28px; }
+      .gallery { gap: 10px; }
+      .item { grid-column: span 4; }
+      .card img { aspect-ratio: 3 / 4; }
+      .ctrl { width: 40px; height: 40px; font-size: 18px; }
+      .close { width: 36px; height: 36px; }
+    }
+
+    /* Landscape phone tweaks */
+    @media screen and (max-height: 430px) and (orientation: landscape) {
+      .stage img { max-height: 70vh; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="brand">
+        <h1>Photos by Harpreet</h1>
+        <span>Weddings • Portraits</span>
+      </div>
+      <nav class="filters" aria-label="Gallery filters">
+        <button class="filter" data-filter="all" aria-pressed="true">All</button>
+        <button class="filter" data-filter="wedding">Weddings</button>
+        <button class="filter" data-filter="portrait">Portraits</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <section class="gallery" id="gallery" aria-label="Photo gallery">
+        <!-- Each item: data-cat for filtering; figure for semantics -->
+        <!-- Weddings -->
+        <figure class="item" data-cat="wedding">
+          <div class="card"><span class="badge">Wedding</span>
+            <img loading="lazy" decoding="async"
+                 src="photos/wedding/edit/Monique/m5.jpg"
+                 alt="Wedding moments - Monique set 5"
+                 sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw" />
+          </div>
+          <figcaption class="sr-only">Monique wedding set</figcaption>
+        </figure>
+
+        <figure class="item" data-cat="portrait">
+          <div class="card"><span class="badge">Portrait</span>
+            <img loading="lazy" decoding="async" src="photos/portraits/DSCF3950.jpg" alt="Portrait DSCF3950" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw" />
+          </div>
+          <figcaption class="sr-only">Portrait</figcaption>
+        </figure>
+
+        <!-- Repeat all originals mapped to categories -->
+        
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Mak/DSCF5906.jpg" alt="Mak wedding DSCF5906" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Mak wedding</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF3568.jpg" alt="Portrait DSCF3568" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF5101 copy.jpg" alt="Portrait DSCF5101" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Monique/m4.jpg" alt="Monique wedding set 4" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Monique wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Taj/DSCF5820.jpg" alt="Taj wedding DSCF5820" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Taj wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Mak/DSCF6055.jpg" alt="Mak wedding DSCF6055" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Mak wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Mak/DSCF5909.jpg" alt="Mak wedding DSCF5909" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Mak wedding</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF4022.jpg" alt="Portrait DSCF4022" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Aman/DSCF5859.jpg" alt="Aman wedding DSCF5859" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Aman wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Aman/DSCF5867.jpg" alt="Aman wedding DSCF5867" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Aman wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Mak/DSCF6046.jpg" alt="Mak wedding DSCF6046" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Mak wedding</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF3949.jpg" alt="Portrait DSCF3949" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Taj/DSCF5813.jpg" alt="Taj wedding DSCF5813" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Taj wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Aman/DSCF5827.jpg" alt="Aman wedding DSCF5827" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Aman wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Monique/10.jpg" alt="Monique wedding 10" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Monique wedding</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF3945.jpg" alt="Portrait DSCF3945" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF5225-2 copy.jpg" alt="Portrait DSCF5225-2" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Mak/DSCF5910.jpg" alt="Mak wedding DSCF5910" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Mak wedding</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF4019.jpg" alt="Portrait DSCF4019" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Taj/DSCF5814.jpg" alt="Taj wedding DSCF5814" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Taj wedding</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF3789.jpg" alt="Portrait DSCF3789" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF3624.jpg" alt="Portrait DSCF3624" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF5053-3 copy.jpg" alt="Portrait DSCF5053-3" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Monique/m1.jpg" alt="Monique wedding 1" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Monique wedding</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF3559.jpg" alt="Portrait DSCF3559" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF5181 copy.jpg" alt="Portrait DSCF5181" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF5099 copy.jpg" alt="Portrait DSCF5099" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF5053-2.jpg" alt="Portrait DSCF5053-2" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF4156.jpg" alt="Portrait DSCF4156" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Taj/DSCF5811.jpg" alt="Taj wedding DSCF5811" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Taj wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Aman/DSCF5864.jpg" alt="Aman wedding DSCF5864" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Aman wedding</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF3573.jpg" alt="Portrait DSCF3573" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Taj/DSCF5817.jpg" alt="Taj wedding DSCF5817" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Taj wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Aman/DSCF5862.jpg" alt="Aman wedding DSCF5862" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Aman wedding</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF5104 copy.jpg" alt="Portrait DSCF5104" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF0384.jpg" alt="Portrait DSCF0384" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Monique/m3.jpg" alt="Monique wedding 3" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Monique wedding</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/megan.jpg" alt="Portrait Megan" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait Megan</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Aman/DSCF5860.jpg" alt="Aman wedding DSCF5860" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Aman wedding</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF0380.jpg" alt="Portrait DSCF0380" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF0383.jpg" alt="Portrait DSCF0383" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Monique/11.jpg" alt="Monique wedding 11" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Monique wedding</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF3569.jpg" alt="Portrait DSCF3569" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Taj/DSCF5813-2.jpg" alt="Taj wedding DSCF5813-2" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Taj wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Aman/DSCF5866.jpg" alt="Aman wedding DSCF5866" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Aman wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Monique/m7.jpg" alt="Monique wedding m7" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Monique wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Mak/DSCF5905.jpg" alt="Mak wedding DSCF5905" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Mak wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Mak/DSCF5911.jpg" alt="Mak wedding DSCF5911" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Mak wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Aman/DSCF5836.jpg" alt="Aman wedding DSCF5836" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Aman wedding</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/portraits/DSCF3958.jpg" alt="Portrait DSCF3958" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Monique/m2.jpg" alt="Monique wedding m2" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Monique wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Mak/DSCF6044.jpg" alt="Mak wedding DSCF6044" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Mak wedding</figcaption></figure>
+        <figure class="item" data-cat="portrait"><div class="card"><span class="badge">Portrait</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Aman/DSCF5863.jpg" alt="Portrait DSCF5863" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Portrait</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Aman/DSCF5835.jpg" alt="Aman wedding DSCF5835" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Aman wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Taj/DSCF5813-2.jpg" alt="Taj wedding DSCF5813-2 repeat" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Taj wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Mak/DSCF5908.jpg" alt="Mak wedding DSCF5908" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Mak wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Mak/DSCF5907.jpg" alt="Mak wedding DSCF5907" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Mak wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Monique/12.jpg" alt="Monique wedding 12" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Monique wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Aman/DSCF5873.jpg" alt="Aman wedding DSCF5873" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Aman wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Monique/m8.jpg" alt="Monique wedding m8" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Monique wedding</figcaption></figure>
+        <figure class="item" data-cat="wedding"><div class="card"><span class="badge">Wedding</span><img loading="lazy" decoding="async" src="photos/wedding/edit/Monique/m6.jpg" alt="Monique wedding m6" sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"/></div><figcaption class="sr-only">Monique wedding</figcaption></figure>
+      </section>
+    </div>
+  </main>
+
+  <!-- Lightbox Dialog -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <div class="backdrop" data-close></div>
+    <div class="stage">
+      <img id="lightbox-img" src="" alt="" />
+      <button class="close" id="close" aria-label="Close" title="Close">×</button>
+      <div class="controls">
+        <button class="ctrl" id="prev" aria-label="Previous">❮</button>
+        <button class="ctrl" id="next" aria-label="Next">❯</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Filtering =====
+    const filters = document.querySelectorAll('.filter');
+    const items = Array.from(document.querySelectorAll('.gallery .item'));
+    filters.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filters.forEach(b => b.setAttribute('aria-pressed', 'false'));
+        btn.setAttribute('aria-pressed', 'true');
+        const f = btn.dataset.filter;
+        items.forEach(it => {
+          const show = (f === 'all') || it.dataset.cat === f;
+          it.style.display = show ? '' : 'none';
+        });
+      });
+    });
+
+    // ===== Lightbox =====
+    const lightbox = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lightbox-img');
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+    const closeBtn = document.getElementById('close');
+    const galleryImgs = items.map(it => it.querySelector('img'));
+    let currentIndex = 0;
+
+    function openAt(idx) {
+      currentIndex = idx;
+      const img = galleryImgs[currentIndex];
+      lbImg.src = img.currentSrc || img.src;
+      lbImg.alt = img.alt || 'Photo';
+      lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      // Preload neighbors
+      const nextIdx = (currentIndex + 1) % galleryImgs.length;
+      const prevIdx = (currentIndex - 1 + galleryImgs.length) % galleryImgs.length;
+      [galleryImgs[nextIdx], galleryImgs[prevIdx]].forEach(im => { const i = new Image(); i.src = im.currentSrc || im.src; });
+      next.focus();
+    }
+    function closeLB() { lightbox.classList.remove('active'); lbImg.src = ''; document.body.style.overflow = ''; }
+    function showNext() { currentIndex = (currentIndex + 1) % galleryImgs.length; openAt(currentIndex); }
+    function showPrev() { currentIndex = (currentIndex - 1 + galleryImgs.length) % galleryImgs.length; openAt(currentIndex); }
+
+    galleryImgs.forEach((img, idx) => img.addEventListener('click', () => openAt(idx)));
+    next.addEventListener('click', e => { e.stopPropagation(); showNext(); });
+    prev.addEventListener('click', e => { e.stopPropagation(); showPrev(); });
+    closeBtn.addEventListener('click', closeLB);
+    lightbox.addEventListener('click', (e) => { if (e.target.hasAttribute('data-close')) closeLB(); });
+
+    // Keyboard support
+    document.addEventListener('keydown', e => {
+      if (!lightbox.classList.contains('active')) return;
+      if (e.key === 'ArrowRight') showNext();
+      if (e.key === 'ArrowLeft') showPrev();
+      if (e.key === 'Escape') closeLB();
+    });
+
+    // Basic swipe on touch devices
+    let touchStartX = 0; let touchEndX = 0;
+    lightbox.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+    lightbox.addEventListener('touchend', e => {
+      touchEndX = e.changedTouches[0].screenX;
+      const dx = touchEndX - touchStartX;
+      if (Math.abs(dx) > 40) { dx < 0 ? showNext() : showPrev(); }
+    });
+
+    // ===== Small perf wins =====
+    // Lazy hydrate: add loading=lazy already set; add decoding async; sizes provided.
+    // Optional: shuffle gallery on load (uncomment to randomize order)
+    // (function shuffle(){
+    //   const g = document.getElementById('gallery');
+    //   const arr = Array.from(g.children);
+    //   for (let i = arr.length - 1; i > 0; i--) {
+    //     const j = Math.floor(Math.random() * (i + 1));
+    //     g.appendChild(arr[j]);
+    //   }
+    // })();
+  </script>
+</body>
+</html>
